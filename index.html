@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex IT Solutions - BCA College Project</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base Reset and Variables */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary-color: #22262A;
+            --accent-color: #4F5665;
+            --white-bg: #FFF;
+            --card-bg: #F8FAFB;
+            --people-img-bg: #efefef;
+            --muted-text: #899098;
+            --shadow: 0 12px 36px rgba(76,80,100,0.06);
+            --detail-bg: rgba(79, 86, 101, 0.05);
+        }
+        body.dark-mode {
+            --primary-color: #E5E5E5;
+            --accent-color: #A8A8A8;
+            --white-bg: #1A1A1A;
+            --card-bg: #252525;
+            --people-img-bg: #2f2f2f;
+            --muted-text: #B0B0B0;
+            --shadow: 0 12px 36px rgba(0,0,0,0.3);
+            --detail-bg: rgba(255, 255, 255, 0.05);
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--white-bg);
+            color: var(--primary-color);
+            line-height: 1.7;
+            transition: background .3s ease, color .3s ease;
+        }
+        
+        a, button, .menu-toggle, input, textarea {
+            cursor: pointer;
+        }
+
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: var(--white-bg); display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 10000; transition: opacity .8s ease, visibility .8s ease;
+        }
+        #loading-screen.hidden { opacity: 0; visibility: hidden; }
+        
+        .brand-loading-text {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: logoFade 2s ease-in-out infinite alternate;
+        }
+        .brand-loading-text i { color: #3B82F6; }
+        @keyframes logoFade { from { opacity: 0.7; transform: scale(0.98); } to { opacity: 1; transform: scale(1.02); } }
+        
+        /* Navbar styles - FULLY TRANSPARENT */
+        .navbar {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 68px;
+            background: transparent; 
+            backdrop-filter: none; 
+            -webkit-backdrop-filter: none;
+            box-shadow: none; 
+            display: flex; align-items: center; justify-content: space-between; z-index: 1000; padding: 0 30px;
+            transition: background .3s ease, box-shadow .3s ease, backdrop-filter .3s ease;
+        }
+
+        .navbar.scrolled {
+            background: rgba(34, 38, 42, 0.95);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+        
+        .navbar-logo { cursor: pointer; display: flex; align-items: center; gap: 8px; text-decoration: none; color: #FFF; font-weight: 700; font-size: 1.4rem; text-shadow: 0 1px 4px rgba(0,0,0,0.7); } 
+        .navbar-logo i { color: #60A5FA; font-size: 1.6rem; }
+        
+        .navbar-links { display: flex; gap: 1.5rem; }
+        .navbar-link {
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color .18s, transform .2s;
+            position: relative;
+            padding: 10px 0;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+        }
+        .navbar-link:hover { color: #ffffff; transform: translateY(-2px); }
+        .navbar-link::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: rgba(255, 255, 255, 0.9); transition: width .3s ease; }
+        .navbar-link:hover::after { width: 100%; }
+        .menu-toggle { display: none; font-size: 1.75rem; color: #fff; cursor: pointer; transition: transform .2s; text-shadow: 0 1px 4px rgba(0,0,0,0.7); }
+        
+        .navbar.scrolled .navbar-link { color: rgba(255, 255, 255, 0.95); }
+        .navbar.scrolled .navbar-link:hover { color: #ffffff; }
+        .navbar.scrolled .menu-toggle { color: #fff; }
+
+        body.dark-mode .navbar { background: transparent; }
+        body.dark-mode .navbar.scrolled { background: rgba(15, 23, 42, 0.95); }
+        body.dark-mode .navbar-link, body.dark-mode .menu-toggle { color: rgba(255, 255, 255, 0.95); }
+
+        @media(max-width:900px) {
+            .navbar { background: #22262A; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: 0 2px 12px rgba(0,0,0,0.3); }
+            .navbar-links { display: none; }
+            .menu-toggle { display: block; color: #fff; text-shadow: none; }
+            .navbar-link { color: #fff; text-shadow: none; }
+            .navbar-link:hover { color: #fff; }
+            .navbar-link::after { background: #fff; }
+            body.dark-mode .navbar { background: #1A1A1A; }
+        }
+
+        /* Slide Menu */
+        .slide-menu {
+            position: fixed; top: 0; right: -310px; width: 300px; height: 100vh;
+            background: var(--white-bg); box-shadow: -12px 0 36px rgba(120,120,160,0.13); z-index: 2000;
+            display: flex; flex-direction: column; transition: right .32s cubic-bezier(.82,-0.01,.22,1), background .3s ease;
+            padding: 62px 30px 40px 30px;
+        }
+        .slide-menu.open { right: 0; }
+        .close-menu { align-self: flex-end; font-size: 1.33rem; color: var(--muted-text); cursor: pointer; margin-bottom: 24px; transition: transform .2s; }
+        .close-menu:hover { transform: rotate(90deg); }
+        .slide-nav-link { margin-bottom: 8px; font-size: 1.15rem; color: var(--primary-color); font-weight: 600; text-decoration: none; transition: color .2s, transform .2s; display: block; }
+        .slide-nav-link:hover { color: var(--accent-color); transform: translateX(5px); }
+        .mode-toggle-btn { margin-top: 30px; padding: 12px 20px; background: var(--accent-color); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background .3s, transform .2s; font-size: 1rem; display: flex; align-items: center; gap: 10px; justify-content: center; }
+        .mode-toggle-btn:hover { background: #333; transform: scale(1.05); }
+        .mode-toggle-btn i { font-size: 1.2rem; }
+
+        /* HERO SECTION */
+        main { min-height: 100vh; padding-top: 0; } 
+        
+        .hero {
+            position: relative; width: 100%; height: 100vh; overflow: hidden;
+            display: flex; align-items: center; justify-content: flex-start; padding-left: 10%;
+        }
+        .hero-bg-img {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 1; filter: brightness(0.55);
+            transition: filter .3s ease;
+        }
+        body.dark-mode .hero-bg-img { filter: brightness(0.4); }
+
+        .hero-content {
+            position: relative; z-index: 2; color: #fff; margin-top: 108px;
+        }
+        
+        .hero-title {
+            font-size: 4.8rem; font-weight: 800; letter-spacing: -2px;
+            animation: fadeUp .8s cubic-bezier(.5,0,.1,1) forwards; margin-bottom: 16px;
+        }
+        .hero-subtitle {
+            font-size: 1.3rem; font-weight: 400; color: rgba(255,255,255,0.95);
+            animation: fadeUp .8s .2s cubic-bezier(.5,0,.1,1) forwards; opacity: 0;
+            max-width: 650px;
+        }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+        
+        /* Why Choose Us Section */
+        .why-choose-section { background: var(--card-bg); margin: 0 0 48px 0; border-radius: 20px; box-shadow: var(--shadow); padding: 48px; transition: background .3s ease, box-shadow .3s ease; opacity: 0; transform: translateY(50px); transition: opacity 1s ease, transform 1s ease, background .3s ease, box-shadow .3s ease; }
+        .why-choose-section.visible { opacity: 1; transform: translateY(0); }
+        .why-choose-title { font-size: 2.2rem; font-weight: 700; color: var(--accent-color); margin-bottom: 34px; text-align: center; transition: color .3s ease; opacity: 0; transform: translateY(30px); animation: scrollFadeIn 1s ease forwards; }
+        @keyframes scrollFadeIn { to { opacity: 1; transform: translateY(0); } }
+        .why-choose-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); gap: 34px; }
+        .why-choose-card { background: var(--white-bg); border-radius: 16px; box-shadow: var(--shadow); padding: 32px 24px; text-align: center; transition: transform .3s ease, box-shadow .3s ease, background .3s ease; opacity: 0; transform: translateY(40px) scale(0.95); }
+        .why-choose-card.visible { opacity: 1; transform: translateY(0) scale(1); }
+        .why-choose-card:hover { transform: translateY(-8px) scale(1.05); box-shadow: 0 16px 48px rgba(76,80,100,0.12); }
+        .why-choose-icon { font-size: 2.5rem; color: var(--accent-color); margin-bottom: 16px; transition: transform .3s ease, color .3s ease; }
+        .why-choose-card:hover .why-choose-icon { transform: scale(1.15) rotate(10deg); }
+        .why-choose-card-title { font-size: 1.2rem; font-weight: 600; color: var(--primary-color); margin-bottom: 12px; transition: color .3s ease; }
+        .why-choose-card-desc { font-size: 0.95rem; color: var(--muted-text); transition: color .3s ease; }
+
+        /* Section Container */
+        .section { padding: 80px 14px; max-width: 1100px; margin: auto; }
+        .section-title { font-size: 2.2rem; font-weight: 700; color: var(--accent-color); margin-bottom: 24px; text-align: left; transition: color .3s ease; opacity: 0; animation: slideInTitle 1.2s ease forwards; }
+        @keyframes slideInTitle { to { opacity: 1; } }
+
+        /* Services Section - Exactly 3 Services */
+        .services-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(290px,1fr)); gap: 28px; }
+        .service-card {
+            background: var(--card-bg); border-radius: 16px; box-shadow: var(--shadow);
+            padding: 32px 26px; display: flex; flex-direction: column; align-items: start;
+            transition: transform .3s, background .3s ease, box-shadow .3s ease; opacity: 0; transform: translateY(50px);
+            animation: slideInCard .8s ease forwards;
+        }
+        @keyframes slideInCard { to { opacity: 1; transform: translateY(0); } }
+        .service-card:hover { transform: translateY(-8px) scale(1.025); box-shadow: 0 16px 40px rgba(0,0,0,0.12); }
+        .service-icon { font-size: 2.5rem; color: #3B82F6; margin-bottom: 16px; }
+        .service-title { font-size: 1.22rem; color: var(--primary-color); font-weight: 600; margin-bottom: 10px; transition: color .3s ease; }
+        .service-desc { color: var(--muted-text); font-size: 0.98rem; margin-bottom: 10px; transition: color .3s ease; }
+
+        /* About Section */
+        .about-container { display: flex; gap: 30px; align-items: center; flex-wrap: wrap; margin-top: 20px; }
+        .about-text-content { flex: 1 1 55%; min-width: 300px; }
+        .about-image-content { flex: 1 1 35%; min-width: 250px; }
+        .about-img { width: 100%; height: auto; object-fit: cover; border-radius: 12px; box-shadow: var(--shadow); transition: transform .3s ease; }
+        .about-image-content:hover .about-img { transform: scale(1.03); }
+        
+        /* People Section */
+        .people-list { display: flex; gap: 38px; margin-top: 24px; justify-content: center; flex-wrap: wrap; }
+        .people-card {
+            width: 280px; background: var(--white-bg); border-radius: 18px; box-shadow: var(--shadow);
+            display: flex; flex-direction: column; align-items: center; padding: 24px 18px;
+            transition: transform .4s cubic-bezier(.175, .885, .32, 1.275), box-shadow .4s ease, background .3s ease;
+            opacity: 0; transform: scale(0.85) translateY(40px); animation: popInCard .7s cubic-bezier(.34,1.56,.64,1) forwards;
+            overflow: hidden;
+        }
+        @keyframes popInCard { to { opacity: 1; transform: scale(1) translateY(0); } }
+        .people-card:nth-child(1) { animation-delay: 0.6s; }
+        .people-card:nth-child(2) { animation-delay: 0.8s; }
+        
+        @media (min-width: 701px) {
+            .people-card:hover { transform: translateY(-12px) scale(1.05); box-shadow: 0 20px 50px rgba(76,80,100,0.18); }
+            .people-card:hover .people-img { transform: scale(1.05) rotate(3deg); }
+            .people-card:hover .people-details-extended { max-height: 200px; padding: 15px; }
+        }
+        .people-card.active { transform: translateY(-12px) scale(1.05); box-shadow: 0 20px 50px rgba(76,80,100,0.18); }
+        .people-card.active .people-img { transform: scale(1.05) rotate(3deg); }
+
+        .people-img {
+            width: 120px; height: 120px; background: var(--people-img-bg); border-radius: 50%;
+            overflow: hidden; margin-bottom: 14px; display: flex; align-items: center; justify-content: center;
+            transition: background .3s ease, transform .4s cubic-bezier(.175, .885, .32, 1.275);
+        }
+        .people-img img { width: 100%; height: 100%; object-fit: cover; }
+
+        .people-name { font-size: 1.3rem; font-weight: 600; color: var(--primary-color); margin-bottom: 5px; transition: color .3s ease; }
+        .people-role { color: var(--accent-color); font-size: 1rem; font-weight: 500; margin-bottom: 15px; transition: color .3s ease; }
+        .people-details-base { color: var(--muted-text); font-size: .9rem; text-align: center; line-height: 1.5; margin-bottom: 15px; transition: color .3s ease; }
+
+        .people-details-extended {
+            background: var(--detail-bg); border-radius: 10px; padding: 0 15px;
+            margin: 0 -18px -10px -18px; max-height: 0; overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out; width: 100%;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .people-details-extended.active { max-height: 200px; padding: 15px; }
+
+        .extended-title { font-size: 0.95rem; font-weight: 600; color: var(--primary-color); margin-bottom: 8px; }
+        .extended-contact-row { display: flex; gap: 15px; margin-top: 10px; margin-bottom: 8px; }
+        .extended-contact-row a { color: var(--accent-color); font-size: 1.5rem; transition: color .2s, transform .2s; }
+        .extended-contact-row a:hover { color: var(--primary-color); transform: scale(1.2); }
+        .extended-info { font-size: 0.85rem; color: var(--muted-text); display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        
+        .detail-toggle-btn {
+            display: none; margin-top: 10px; padding: 8px 15px; background: var(--accent-color);
+            color: var(--white-bg); border: none; border-radius: 8px; font-weight: 500; cursor: pointer;
+            transition: background 0.2s, transform 0.1s; font-size: 0.9rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .detail-toggle-btn:hover { background: #333; }
+        .detail-toggle-btn.hide { background: var(--primary-color); }
+        body.dark-mode .detail-toggle-btn { background: var(--accent-color); }
+        body.dark-mode .detail-toggle-btn.hide { background: var(--muted-text); color: var(--card-bg); }
+        
+        /* Contact Section */
+        #contact { opacity: 0; transform: translateY(50px); transition: opacity 1.2s ease-out, transform 1.2s ease-out; }
+        #contact.visible { opacity: 1; transform: translateY(0); }
+
+        .contact-container {
+            background: var(--card-bg); border-radius: 18px; padding: 40px; box-shadow: var(--shadow);
+            transition: background 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; align-items: center;
+        }
+        
+        .contact-form { margin-top: 15px; display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 400px; }
+        .contact-form input, .contact-form textarea {
+            padding: 14px; border-radius: 10px; border: 1px solid var(--detail-bg); background: var(--white-bg);
+            color: var(--primary-color); transition: background .3s ease, color .3s ease, border .3s ease, box-shadow .3s ease;
+            font-size: 1rem;
+        }
+        .contact-form input:focus, .contact-form textarea:focus {
+            outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(79, 86, 101, 0.2); 
+        }
+
+        .contact-form button {
+            padding: 14px 22px; background: var(--accent-color); color: #fff; border: none; border-radius: 10px;
+            font-weight: 600; cursor: pointer; transition: background .21s, transform .2s, box-shadow .2s;
+            font-size: 1.1rem; box-shadow: 0 4px 15px rgba(79, 86, 101, 0.4); 
+        }
+        .contact-form button:hover { background: #333; transform: translateY(-2px) scale(1.01); box-shadow: 0 6px 20px rgba(79, 86, 101, 0.6); }
+        .contact-form button:active { transform: translateY(1px); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); background: #404652; }
+
+        .contact-icons-row { margin-top: 30px; display: flex; gap: 28px; justify-content: center; }
+        .contact-icons-row a { color: var(--accent-color); font-size: 2.2rem; transition: color .3s, transform .3s, text-shadow .3s; }
+        .contact-icons-row a:hover { color: var(--primary-color); transform: scale(1.3) rotate(5deg); text-shadow: 0 0 15px rgba(79, 86, 101, 0.5); }
+        body.dark-mode .contact-icons-row a:hover { color: #E5E5E5; text-shadow: 0 0 15px rgba(255, 255, 255, 0.3); }
+
+        .form-feedback {
+            display: none; padding: 12px 20px; background: #10B981; color: #FFFFFF;
+            border-radius: 8px; font-weight: 600; text-align: center; margin-top: 15px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center; padding: 30px 20px; border-top: 1px solid rgba(137, 144, 152, 0.15);
+            color: var(--muted-text); font-size: 0.9rem; margin-top: 40px;
+        }
+
+        @media(max-width:900px) {
+            .navbar-links { display: none; }
+            .hero-content { margin-top: 10px; }
+        }
+        @media(max-width:700px) {
+            .hero { padding-left: 5%; }
+            .hero-title { font-size: 3rem; }
+            .hero-subtitle { font-size: 1.05rem; }
+            .people-list { gap: 18px; }
+            .why-choose-grid { grid-template-columns: 1fr; }
+            .about-container { flex-direction: column-reverse; } 
+            .people-card { width: 90%; max-width: 350px; }
+            .detail-toggle-btn { display: block; }
+            .people-card { transform: scale(1) translateY(0); box-shadow: var(--shadow); }
+            .contact-container { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="brand-loading-text">
+            <i class="fa-solid fa-laptop-code"></i>
+            <span>Apex IT Solutions</span>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+      <a class="navbar-logo" id="logoToggle" href="#">
+        <i class="fa-solid fa-laptop-code"></i>
+        <span>Apex IT Solutions</span>
+      </a>
+      <div class="navbar-links">
+        <a class="navbar-link" href="#">Home</a>
+        <a class="navbar-link" href="#why-choose">Why Choose Us</a>
+        <a class="navbar-link" href="#services">Services</a>
+        <a class="navbar-link" href="#about">About</a>
+        <a class="navbar-link" href="#team">Team</a>
+        <a class="navbar-link" href="#contact">Contact</a>
+      </div>
+      <span class="menu-toggle"><i class="fa-solid fa-bars"></i></span>
+    </nav>
+
+    <!-- Slide Menu for Mobile -->
+    <aside class="slide-menu" id="slideMenu">
+      <span class="close-menu"><i class="fa-solid fa-xmark"></i></span>
+      <a href="#" class="slide-nav-link">Home</a>
+      <a href="#why-choose" class="slide-nav-link">Why Choose Us</a>
+      <a href="#services" class="slide-nav-link">Services</a>
+      <a href="#about" class="slide-nav-link">About</a>
+      <a href="#team" class="slide-nav-link">Team</a>
+      <a href="#contact" class="slide-nav-link">Contact</a>
+      <button class="mode-toggle-btn" id="modeToggleMobile"><i class="fa-solid fa-moon"></i> <span id="modeText">Dark Mode</span></button>
+    </aside>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" id="home">
+            <img class="hero-bg-img" src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1920&auto=format&fit=crop" onerror="this.onerror=null;this.src='https://placehold.co/1920x1080/4f5665/ffffff?text=Apex+IT+Solutions';" alt="Tech Background" />
+            <div class="hero-content">
+                <h1 class="hero-title">Apex IT Solutions</h1>
+                <p class="hero-subtitle">Empowering modern enterprises with custom software, web design, and cloud IT services. BCA Final Year College Project.</p>
+            </div>
+        </section>
+
+        <!-- Why Choose Us -->
+        <section class="why-choose-section" id="why-choose">
+            <h2 class="why-choose-title">Why Choose Us</h2>
+            <div class="why-choose-grid">
+                <div class="why-choose-card">
+                    <div class="why-choose-icon"><i class="fa-solid fa-clock"></i></div>
+                    <div class="why-choose-card-title">24/7 Support</div>
+                    <div class="why-choose-card-desc">Round-the-clock technical assistance for seamless business operations.</div>
+                </div>
+                <div class="why-choose-card">
+                    <div class="why-choose-icon"><i class="fa-solid fa-lightbulb"></i></div>
+                    <div class="why-choose-card-title">Unique & Creative Ideas</div>
+                    <div class="why-choose-card-desc">Innovative solutions that set your business apart from the competition.</div>
+                </div>
+                <div class="why-choose-card">
+                    <div class="why-choose-icon"><i class="fa-solid fa-rocket"></i></div>
+                    <div class="why-choose-card-title">Making Your Business Future Ready</div>
+                    <div class="why-choose-card-desc">Scalable technology built to grow with your vision tomorrow.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section: Exactly 3 Services -->
+        <section class="section" id="services">
+            <h2 class="section-title">Our Services</h2>
+            <div class="services-list">
+                <!-- Service 1: Web Development -->
+                <div class="service-card">
+                    <div class="service-icon"><i class="fa-solid fa-code"></i></div>
+                    <div class="service-title">1. Web & Application Development</div>
+                    <div class="service-desc">End-to-end web applications, responsive websites, and custom software systems tailored for modern business growth.</div>
+                </div>
+
+                <!-- Service 2: UI/UX & Design -->
+                <div class="service-card">
+                    <div class="service-icon"><i class="fa-solid fa-paint-brush"></i></div>
+                    <div class="service-title">2. UI/UX & Brand Design</div>
+                    <div class="service-desc">Intuitive interface design, brand identity creation, and user experience engineering for web and mobile platforms.</div>
+                </div>
+
+                <!-- Service 3: Cloud & Software Consultancy -->
+                <div class="service-card">
+                    <div class="service-icon"><i class="fa-solid fa-cloud"></i></div>
+                    <div class="service-title">3. Cloud & IT Consultancy</div>
+                    <div class="service-desc">Scalable cloud deployment, database architecture design, system security, and technical support.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="section" id="about">
+            <h2 class="section-title">About Apex IT Solutions</h2>
+            <div class="about-container">
+                <div class="about-text-content">
+                    <p class="product-desc">Apex IT Solutions is a modern technology company showcase developed as a BCA final year college project. From custom web portals and UI/UX design to cloud systems, we build software solutions that simplify business management.</p>
+                    <p class="product-desc" style="margin-top: 1rem;">Engineered with clean code and modern web standards, Apex IT Solutions adapts to unique enterprise demands. Our objective is to reduce complexity, enhance user engagement, and drive digital innovation.</p>
+                </div>
+                <div class="about-image-content">
+                    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop" onerror="this.onerror=null;this.src='https://placehold.co/400x300/4F5665/ffffff?text=Our+Mission';" alt="About Image - Team Collaboration" class="about-img"/>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Section -->
+        <section class="section" id="team">
+            <h2 class="section-title">Our Team</h2>
+            <div class="people-list">
+                
+                <div class="people-card">
+                    <div class="people-img">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop" onerror="this.onerror=null;this.src='https://placehold.co/150/4F5665/ffffff?text=Apurv';" alt="Apurv Vala" />
+                    </div>
+                    <div class="people-name">Meet</div>
+                    <div class="people-role">Lead Full-Stack Developer</div>
+                    <div class="people-details-base">Responsible for system architecture, frontend design, and core software implementation.</div>
+                    
+                    <button class="detail-toggle-btn">View Details</button>
+
+                    <div class="people-details-extended">
+                        <p class="extended-title">Expertise: Web Development & Architecture</p>
+                        <div class="extended-contact-row">
+                            <a href="https://www.linkedin.com/in/wala-apurv-48634a2a1/" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                            <a href="https://www.instagram.com/apurv.wala_/" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Priyansh Vala -->
+                <div class="people-card">
+                    <div class="people-img">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop" onerror="this.onerror=null;this.src='https://placehold.co/150/4F5665/ffffff?text=Priyansh';" alt="Priyansh Vala" />
+                    </div>
+                    <div class="people-name">Priyansh</div>
+                    <div class="people-role">UI/UX & Creative Director</div>
+                    <div class="people-details-base">Leads visual brand identity, marketing strategies, and user interface design.</div>
+                    
+                    <button class="detail-toggle-btn">View Details</button>
+
+                    <div class="people-details-extended">
+                        <p class="extended-title">Expertise: UI/UX & Brand Design</p>
+                        <div class="extended-info">
+                            <i class="fa-solid fa-phone"></i>
+                            <span>+91 942 984 41XX</span>
+                        </div>
+                        <div class="extended-contact-row">
+                            <a href="https://www.linkedin.com/in/priyansh-vala-25102000p/" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                            <a href="https://www.instagram.com/valapriyansh/" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="section" id="contact">
+            <h2 class="section-title">Contact Us</h2>
+            <div class="contact-container">
+                <form class="contact-form" id="contactForm">
+                    <input type="text" placeholder="Name" required />
+                    <input type="email" placeholder="Email" required />
+                    <textarea placeholder="Message" required></textarea>
+                    <button type="submit">Send Message</button>
+                    <div class="form-feedback" id="formFeedback">Message sent successfully!</div>
+                </form>
+                <div class="contact-icons-row">
+                    <a href="https://www.youtube.com" target="_blank" title="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="https://www.instagram.com/nextgen.bywala/" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="mailto:walaapurv@gmail.com" target="_blank" title="Email"><i class="fa-solid fa-envelope"></i></a>
+                    <a href="https://api.whatsapp.com/send/?phone=9173213576&text&type=phone_number&app_absent=0" target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Apex IT Solutions - BCA Final Year College Project.</p>
+    </footer>
+
+    <script>
+        function handleScroll() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        }
+
+        window.addEventListener('scroll', handleScroll);
+        
+        window.addEventListener('DOMContentLoaded', function(){
+            handleScroll(); 
+            
+            setTimeout(function(){
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) loadingScreen.classList.add('hidden');
+            }, 1200);
+            
+            const toggle = document.querySelector('.menu-toggle');
+            const slideMenu = document.getElementById('slideMenu');
+            const closeMenu = document.querySelector('.close-menu');
+            
+            if (toggle && slideMenu && closeMenu) {
+                toggle.onclick = function(){ slideMenu.classList.add('open'); };
+                closeMenu.onclick = function(){ slideMenu.classList.remove('open'); };
+                document.querySelectorAll('.slide-nav-link').forEach(function(link){
+                    link.onclick = function(){ slideMenu.classList.remove('open'); };
+                });
+            }
+            
+            const body = document.body;
+            const logoToggle = document.getElementById('logoToggle');
+            const modeToggleMobile = document.getElementById('modeToggleMobile');
+            const modeText = document.getElementById('modeText');
+            const modeIcon = modeToggleMobile ? modeToggleMobile.querySelector('i') : null;
+            
+            function toggleMode(){
+                body.classList.toggle('dark-mode');
+                const isDark = body.classList.contains('dark-mode');
+                if (modeText) modeText.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+                if (modeIcon) modeIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            }
+            
+            if (logoToggle) {
+                logoToggle.onclick = function(e){
+                    if (window.innerWidth > 900) {
+                        e.preventDefault();
+                        toggleMode();
+                    }
+                };
+            }
+            
+            if (modeToggleMobile) {
+                modeToggleMobile.onclick = function(){ toggleMode(); };
+            }
+            
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-mode');
+                if (modeText) modeText.textContent = 'Light Mode';
+                if (modeIcon) modeIcon.className = 'fa-solid fa-sun';
+            }
+            
+            const whyChooseSection = document.querySelector('.why-choose-section');
+            const whyChooseCards = document.querySelectorAll('.why-choose-card');
+            
+            function observeWhyChoose(){
+                const options = { threshold: 0.2 };
+                const observer = new IntersectionObserver(function(entries){
+                    entries.forEach(function(entry){
+                        if (entry.isIntersecting) {
+                            whyChooseSection.classList.add('visible');
+                            whyChooseCards.forEach(function(card, index){
+                                setTimeout(function(){
+                                    card.classList.add('visible');
+                                }, index * 200);
+                            });
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, options);
+                if (whyChooseSection) observer.observe(whyChooseSection);
+            }
+            
+            const fadeEls = document.querySelectorAll('.service-card, .people-card');
+            const scrollObserver = new IntersectionObserver(function(entries){
+                entries.forEach(function(entry){
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = 1;
+                        entry.target.style.transform = 'translateY(0) scale(1)';
+                        scrollObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+            fadeEls.forEach(function(el){ scrollObserver.observe(el); });
+            
+            observeWhyChoose();
+            
+            document.querySelectorAll('.detail-toggle-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const card = this.closest('.people-card');
+                    const extendedDetails = card.querySelector('.people-details-extended');
+                    
+                    card.classList.toggle('active');
+                    extendedDetails.classList.toggle('active');
+                    
+                    if (extendedDetails.classList.contains('active')) {
+                        this.textContent = 'Hide Details';
+                        this.classList.add('hide');
+                    } else {
+                        this.textContent = 'View Details';
+                        this.classList.remove('hide');
+                    }
+                });
+            });
+
+            const contactForm = document.getElementById('contactForm');
+            const formFeedback = document.getElementById('formFeedback');
+            if (contactForm && formFeedback) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    contactForm.reset();
+                    formFeedback.style.display = 'block';
+                    setTimeout(function() {
+                        formFeedback.style.display = 'none';
+                    }, 3000);
+                });
+            }
+
+            const contactSection = document.getElementById('contact');
+            function observeContact() {
+                const options = { threshold: 0.1 };
+                const observer = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            contactSection.classList.add('visible');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, options);
+                if (contactSection) observer.observe(contactSection);
+            }
+            
+            observeContact();
+        });
+    </script>
+</body>
+</html>
